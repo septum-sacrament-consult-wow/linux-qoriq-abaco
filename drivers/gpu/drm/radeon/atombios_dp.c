@@ -50,28 +50,31 @@ static char *pre_emph_names[] = {
  * or from atom. Note that atom operates on
  * dw units.
  */
+
 void radeon_atom_copy_swap(u8 *dst, u8 *src, u8 num_bytes, bool to_le)
 {
 #ifdef __BIG_ENDIAN
 	u8 src_tmp[20], dst_tmp[20]; /* used for byteswapping */
 	u32 *dst32, *src32;
 	int i;
-
-	memcpy(src_tmp, src, num_bytes);
+	i= num_bytes;
+	memcpy(src_tmp, src, (num_bytes & ~3 )+4);
 	src32 = (u32 *)src_tmp;
 	dst32 = (u32 *)dst_tmp;
 	if (to_le) {
 		for (i = 0; i < ((num_bytes + 3) / 4); i++)
 			dst32[i] = cpu_to_le32(src32[i]);
-		memcpy(dst, dst_tmp, num_bytes);
+		memcpy(dst, dst_tmp, (num_bytes & ~3 )+4);
 	} else {
 		u8 dws = num_bytes & ~3;
-		for (i = 0; i < ((num_bytes + 3) / 4); i++)
+		for (i = 0; i < ((num_bytes + 3) / 4); i++){
 			dst32[i] = le32_to_cpu(src32[i]);
+		}
 		memcpy(dst, dst_tmp, dws);
 		if (num_bytes % 4) {
-			for (i = 0; i < (num_bytes % 4); i++)
+			for (i = 0; i < (num_bytes % 4); i++) {
 				dst[dws+i] = dst_tmp[dws+i];
+			}
 		}
 	}
 #else
