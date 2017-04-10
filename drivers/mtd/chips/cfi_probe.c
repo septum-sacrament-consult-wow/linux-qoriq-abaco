@@ -235,7 +235,17 @@ static int __xipram cfi_chip_setup(struct map_info *map,
 	cfi_qry_mode_off(base, map, cfi);
 	xip_allowed(base, map);
 
-	printk(KERN_INFO "%s: Found %d x%d devices at 0x%x in %d-bit bank. Manufacturer ID %#08x Chip ID %#08x\n",
+	/* vendor provided patch */
+	/* Fix S70GL02GS info, it is 2 x 1 Gb rather than 1 x 2 Gb */
+	if (cfi->mfr == CFI_MFR_AMD && cfi->cfiq->DevSize == 0x1C &&
+	    cfi->cfiq->NumEraseRegions == 1) {
+		pr_info(KERN_INFO "Correcting S70GL02GS CFI data\n");
+		cfi->cfiq->DevSize = 0x1B;
+		cfi->cfiq->ChipEraseTimeoutTyp = 0x12;
+		cfi->cfiq->EraseRegionInfo[0] &= ~0x400;
+	}
+
+	pr_info(KERN_INFO "%s: Found %d x%d devices at 0x%x in %d-bit bank. Manufacturer ID %#08x Chip ID %#08x\n",
 	       map->name, cfi->interleave, cfi->device_type*8, base,
 	       map->bankwidth*8, cfi->mfr, cfi->id);
 
