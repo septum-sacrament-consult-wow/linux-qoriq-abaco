@@ -390,7 +390,8 @@ static int m88e1510_config_aneg(struct phy_device *phydev)
 {
 	int err;
 
-	err = m88e1318_config_aneg(phydev);
+	/* something in the replaced call broke the 1512 */
+	err = genphy_config_aneg(phydev);
 	if (err < 0)
 		return err;
 
@@ -754,11 +755,36 @@ static int marvell_read_status(struct phy_device *phydev)
 	int err;
 	int lpa;
 	int status = 0;
-
+	int saved_page;
 	/* Update the link, but return if there
 	 * was an error */
 	err = genphy_update_link(phydev);
 	if (err)
+		return err;
+
+	/* patch to reinforce the link with the fibre status
+	 * only valid for 1512 but patch is for that device
+	 */
+
+	saved_page = phy_read(phydev, MII_MARVELL_PHY_PAGE);
+	if (saved_page < 0)
+		return saved_page;
+
+	err = phy_write(phydev, MII_MARVELL_PHY_PAGE, MII_M1111_FIBER);
+	if (err < 0)
+		return err;
+	/* read twice to get current value */
+
+	status = phy_read(phydev, MII_BMSR);
+	status = phy_read(phydev, MII_BMSR);
+
+	/*update the link if fibre is up */
+	if (status & BMSR_LSTATUS)
+		phydev->link = 1;
+
+	/* replace the page pointer */
+	err = phy_write(phydev, MII_MARVELL_PHY_PAGE, saved_page);
+	if (err < 0)
 		return err;
 
 	if (AUTONEG_ENABLE == phydev->autoneg) {
