@@ -35,6 +35,21 @@ config BSC9131_RDB
 	  StarCore SC3850 DSP
 	  Manufacturer : Freescale Semiconductor, Inc
 
+config PPC10A
+ 	bool "PPC10A 6U VME PLATFORM"
+ 	select DEFAULT_UIMAGE
+	select PPC_E500MC
+	select PHYS_64BIT
+	select SWIOTLB
+	select ARCH_REQUIRE_GPIOLIB
+	select GPIO_MPC8XXX
+	select HAS_RAPIDIO
+	select PPC_EPAPR_HV_PIC
+        select HAS_FSL_QBMAN
+	select GE_FPGA
+  	help
+ 	This option enables support for the PPC10A
+
 config C293_PCIE
 	  bool "Freescale C293PCIE"
 	  select DEFAULT_UIMAGE

@@ -1,0 +1,456 @@
+/*
+ * Copyright 2009-2012 Freescale Semiconductor Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Freescale Semiconductor nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ *
+ * ALTERNATIVELY, this software may be distributed under the terms of the
+ * GNU General Public License ("GPL") as published by the Free Software
+ * Foundation, either version 2 of that License or (at your option) any
+ * later version.
+ *
+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * PPC10A Device Tree Source
+ * Copyright (C) 2016 Abaco Systems, Inc
+ *
+ * Adapted from P4080 Device Tree Source
+*/
+
+/include/ "ppc10a-pre.dtsi"
+
+/ {
+	model = "PPC10A";
+	compatible = "PPC10A";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&mpic>;
+
+	aliases {
+		ethernet0 = &enet0;
+		ethernet1 = &enet1;
+		
+	};
+
+	memory {
+		device_type = "memory";
+	};
+
+	dcsr: dcsr@f00000000 {
+		ranges = <0x00000000 0xf 0x00000000 0x01008000>;
+	};
+
+	bportals: bman-portals@ff4000000 {
+		ranges = <0x0 0xf 0xf4000000 0x200000>;
+	};
+
+	qportals: qman-portals@ff4200000 {
+		ranges = <0x0 0xf 0xf4200000 0x200000>;
+	};
+
+	soc: soc@ffe000000 {
+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
+		reg = <0xf 0xfe000000 0 0x00001000>;
+
+		spi@110000 {
+			cell-index = <0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "fsl,espi";
+			reg = <0x110000 0x1000>;
+			interrupts = <53 0x2 0 0>;
+			espi,num-ss-bits = <4>;
+			mode = "cpu";
+
+			fsl_m25p80@0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "fsl,espi-flash";
+				reg = <0>;
+				linux,modalias = "fsl_m25p80";
+				spi-max-frequency = <40000000>; /* input clock */
+			};
+		};
+
+		i2c@118000 {
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+			cell-index = <0x0>;
+			compatible = "fsl-i2c";
+			reg = <0x118000 0x100>;
+			interrupts = <0x26 0x2 0x0 0x0>;
+			dfsrr;
+
+			switch@4d {
+				compatible = "nxp,pca9560";
+				reg = <0x4d>;
+			};
+
+			eeprom@50 {
+				compatible = "at24,24c256";
+				reg = <0x50>;
+			};
+		};
+
+		i2c@118100 {
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+			cell-index = <0x1>;
+			compatible = "fsl-i2c";
+			reg = <0x118100 0x100>;
+			interrupts = <0x26 0x2 0x0 0x0>;
+			dfsrr;
+
+			hwmon@40 {
+				compatible = "lattice,ispPAC1220A";
+				reg = <0x40>;
+			};
+
+			hwmon@48 {
+				compatible = "national,lm92";
+				reg = <0x48>;
+			};
+
+			hwmon@4c {
+				compatible = "adi,adt7461";
+				reg = <0x4c>;
+			};
+
+			switch@4e {
+				compatible = "nxp,pca9560";
+				reg = <0x4e>;
+			};
+
+			rtc@51 {
+				compatible = "epson,rx8581";
+				reg = <0x51>;
+				interrupts = <0xc 0x4>;
+				interrupt-parent = <0x26>;
+			};
+
+			eti@6b {
+				compatible = "dallas,ds1682";
+				reg = <0x6b>;
+			};
+		};
+
+		i2c@119000 {
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+			cell-index = <0x2>;
+			compatible = "fsl-i2c";
+			reg = <0x119000 0x100>;
+			interrupts = <0x27 0x2 0x0 0x0>;
+			dfsrr;
+
+			eeprom@77 {
+				compatible = "idt,idt_pcie";
+				reg = <0x77>;
+			};
+		};
+
+		i2c@119100 {
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+			cell-index = <0x3>;
+			compatible = "fsl-i2c";
+			reg = <0x119100 0x100>;
+			interrupts = <0x27 0x2 0x0 0x0>;
+			dfsrr;
+		};
+		usb0: usb@210000 {
+		        interrupts = <44 0x2 0 0>;
+			phy_type = "ulpi";
+		};
+
+		usb1: usb@211000 {
+			interrupts = <45 0x2 0 0>;
+			dr_mode = "host";
+			phy_type = "ulpi";
+		};
+
+		fman0: fman@400000 {
+
+			mdio0: mdio@e1120 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "fsl,fman-mdio";
+				reg = <0xe1120 0xee0>;
+				interrupts = <100 1 0 0>;
+
+				phy0: ethernet-phy@1 {
+					reg = <0x1>;
+					interrupts = <9 0x4>;
+					interrupt-parent = <&gef_pic>;
+				};
+
+				phy1: ethernet-phy@3 {
+					reg = <0x3>;
+					interrupts = <9 0x4>;
+					interrupt-parent = <&gef_pic>;
+				};
+			};
+		};
+
+		fman1: fman@500000 {
+
+		enet0: ethernet@e4000 {
+				cell-index = <2>;
+				compatible = "fsl,p4080-fman-1g-mac", "fsl,fman-1g-mac";
+				reg = <0xe4000 0x1000>;
+				fsl,port-handles = <&fman1_rx2 &fman1_tx2>;
+				tbi-handle = <&tbi0>;
+				phy-handle = <&phy0>;
+				phy-connection-type = "sgmii";
+			};
+
+			mdio@e5120 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "fsl,fman-tbi";
+				reg = <0xe5120 0xee0>;
+				interrupts = <101 1 0 0>;
+
+				tbi0: tbi-phy@8 {
+					reg = <8>;
+					device_type = "tbi-phy";
+				};
+
+			};
+			enet1: ethernet@e6000 {
+				cell-index = <3>;
+				compatible = "fsl,p4080-fman-1g-mac", "fsl,fman-1g-mac";
+				reg = <0xe6000 0x1000>;
+				fsl,port-handles = <&fman1_rx3 &fman1_tx3>;
+				tbi-handle = <&tbi1>;
+				phy-handle = <&phy1>;
+				phy-connection-type = "sgmii";
+			};
+
+			mdio@e7120 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "fsl,fman-tbi";
+				reg = <0xe7120 0xee0>;
+				interrupts = <101 1 0 0>;
+
+				tbi1: tbi-phy@8 {
+					reg = <8>;
+					device_type = "tbi-phy";
+				};
+			};
+
+		};
+	};
+
+	lbc:  localbus@ffe124000 {
+		compatible = "fsl,p4080-elbc", "fsl,elbc", "simple-bus";
+		reg = <0xf 0xfe124000 0 0x1000>;
+		interrupts = <25 2 0 0>;
+		#address-cells = <2>;
+		#size-cells = <1>;
+
+		ranges = <0 0 0xf 0xff800000 0x00800000               // Boot window
+		1 0 0xf 0xf0000000 0x08000000 // Paged Flash
+		2 0 0xf 0xfc010000 0x00008000 // LPC BMM
+		3 0 0xf 0xfc200000 0x00080000 // NVRAM
+		4 0 0xf 0xfc000000 0x00008000 // Register FPGA
+		5 0 0xf 0xfc008000 0x00008000 // FPGA AFIX
+		6 0 0xf 0xfd000000 0x00800000 // IO FPGA 8 bit
+		7 0 0xf 0xfd800000 0x00800000>; // IO FPGA 32 bit
+
+		/* This is boot flash
+		flash@0,0 {
+			compatible = "cfi-flash";
+			reg = <0 0 0x00800000>;
+			bank-width = <2>;
+			device-width = <2>;
+		};*/
+		flash@1,0 {
+			compatible = "cfi-flash";
+			reg = <1 0 0x08000000>;
+			bank-width = <2>;
+			device-width = <2>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "user";
+				reg = <0x00000000 0x07800000>;
+			};
+			partition@7800000 {
+				label = "firmware";
+				reg = <0x07800000 0x00800000>;
+				read-only;
+			};
+		};
+
+		 serial@2,4000 {
+			cell-index = <2>;
+			device_type = "serial";
+			compatible = "ns16550";
+			reg = <0x2 0x4000 0x8>;
+			clock-frequency = <400000000>;
+			interrupts = <7 0x4>;
+			interrupt-parent = <&gef_pic>;
+		};
+
+		nvram@3,0 {
+			 device_type = "nvram";
+			compatible = "everspin,mr2a08a";
+			reg = <0x3 0x10000 0x70000>;
+		};
+
+		fpga@4,0 {
+			compatible = "gef,fpga-regs";
+			reg = <0x4 0x0 0x40>;
+		};
+		wdt@4,2000 {
+			#interrupt-cells = <2>;
+			device_type = "watchdog";
+			compatible = "gef,fpga-wdt";
+			reg = <0x4 0x2000 0x8>;
+			interrupts = <5 0x4>;
+			interrupt-parent = <&gef_pic>;
+		};
+		/*
+		wdt@4,2010 {
+			#interrupt-cells = <2>;
+			device_type = "watchdog";
+			compatible = "gef,fpga-wdt";
+			reg = <0x4 0x2010 0x8>;
+			interrupts = <0x4 0x4>;
+			interrupt-parent = <&gef_pic>;
+		};
+		*/
+		gef_pic: pic@4,4000 {
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			compatible = "gef,fpga-pic";
+			reg = <0x4 0x4000 0x20>;
+			interrupts = <0x0 0x9 0 0>;
+			interrupt-parent = <&mpic>;
+		};
+		gef_gpio: gpio@7,10000 {
+			#gpio-cells = <2>;
+			compatible = "gef,ppc10a-gpio", "gef,sbc610-gpio";
+			reg = <0x7 0x10000 0x24>;
+			interrupts = <0x6 0x4>;
+			interrupt-parent = <&gef_pic>;
+			gpio-controller;
+		};
+	};
+
+	pci0: pcie@ffe200000 {
+		compatible = "fsl,p4080-pcie";
+		device_type = "pci";
+		#interrupt-cells = <1>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		reg = <0xf 0xfe200000 0 0x1000>;
+		bus-range = <0x0 0xff>;
+		/*SWR ranges from released DTB */
+		ranges = <0x2000000 0x0 0xc0000000 0x8 0x0 0x0 0x40000000 
+		       	 0x1000000 0x0 0x0 0xf 0xfca00000 0x0 0x100000>;
+
+		clock-frequency = <0x1fca055>;
+		fsl,msi = <&msi0>;
+		interrupts = <0x10 0x2 0x1 0xf>;
+		interrupt-map-mask = <0x0000 0 0 7>;
+		interrupt-map = <
+			0000 0 0 1 &mpic 40 1 0 0
+			0000 0 0 2 &mpic 1 1 0 0
+			0000 0 0 3 &mpic 2 1 0 0
+			0000 0 0 4 &mpic 3 1 0 0
+			>;
+		pcie@0 {
+			reg = <0 0 0 0 0>;
+			#size-cells = <2>;
+			#address-cells = <3>;
+			device_type = "pci";
+			ranges = <0x02000000 0 0xc0000000
+				  0x02000000 0 0xc0000000
+				  0 0x40000000
+
+				  0x01000000 0 0x00000000
+				  0x01000000 0 0x00000000
+				  0 0x00100000>;
+		};
+	};
+
+	pci1: pcie@ffe201000 {
+		compatible = "fsl,p4080-pcie";
+		device_type = "pci";
+		#interrupt-cells = <1>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		reg = <0xf 0xfe201000 0 0x1000>;
+		bus-range = <0 0xff>;
+		
+		ranges = <0x2000000 0x0 0xc0000000 0xc 0x0 0x0 0x20000000 0x1000000 
+			  0x0 0x0 0xf 0xfcb00000 0x0 0x100000>;
+
+
+		clock-frequency = <0x1fca055>;
+		fsl,msi = <&msi1>;
+		interrupts = <0x10 0x2 0x1 0xe>;
+		interrupt-map-mask = <0xf800 0 0 7>;
+		interrupt-map = <
+			0000 0 0 1 &mpic 41 1 0 0
+			0000 0 0 2 &mpic 5 1 0 0
+			0000 0 0 3 &mpic 6 1 0 0
+			0000 0 0 4 &mpic 7 1 0 0
+			>;
+		pcie@0 {
+			reg = <0 0 0 0 0>;
+			#size-cells = <2>;
+			#address-cells = <3>;
+			device_type = "pci";
+			ranges = <0x02000000 0 0xc0000000
+				  0x02000000 0 0xc0000000
+				  0 0x20000000
+
+				  0x01000000 0 0x00000000
+				  0x01000000 0 0x00000000
+				  0 0x00100000>;
+		};
+	};
+
+	fsl,dpaa {
+		compatible = "fsl,p4080-dpaa", "fsl,dpaa";
+
+		ethernet@0 {
+			compatible = "fsl,p4080-dpa-ethernet", "fsl,dpa-ethernet";
+			fsl,fman-mac = <&enet0>;
+		};
+		ethernet@1 {
+			compatible = "fsl,p4080-dpa-ethernet", "fsl,dpa-ethernet";
+			fsl,fman-mac = <&enet1>;
+		};
+
+	};
+};
+
+/include/ "ppc10a-post.dtsi"
+/include/ "fsl/qoriq-dpaa-res1.dtsi"
+
