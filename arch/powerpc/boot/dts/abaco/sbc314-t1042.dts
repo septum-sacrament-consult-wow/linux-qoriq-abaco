@@ -44,7 +44,6 @@
 	aliases {
 		phy_rgmii_0 = &phy_rgmii_0;
 		phy_rgmii_1 = &phy_rgmii_1;
-		phy_sgmii_2 = &phy_sgmii_2;
 	};
 
 	ifc: localbus@ffe124000 {
@@ -65,9 +64,7 @@
 			};
 
 			enet2: ethernet@e4000 {
-				phy-handle = <&phy_sgmii_2>;
-				phy-connection-type = "sgmii";
-				rcpm-wakeup = <&rcpm 0x20000000>;
+				status = "disabled";
 			};
 
 			enet3: ethernet@e6000 {
@@ -83,14 +80,11 @@
 			};
 
 			mdio0: mdio@fc000 {
-				phy_sgmii_2: ethernet-phy@03 {
-					reg = <0x03>;
-				};
 				phy_rgmii_0: ethernet-phy@01 {
-					reg = <0x01>;
+					reg = <0x00>;
 				};
 				phy_rgmii_1: ethernet-phy@02 {
-					reg = <0x02>;
+					reg = <0x01>;
 				};
 			};
 		};
