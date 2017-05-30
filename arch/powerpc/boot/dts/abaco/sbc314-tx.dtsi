@@ -120,13 +120,6 @@
 		reg = <0xf 0xfe000000 0 0x00001000>;
 
 		spi@110000 {
-			flash@0 {
-				#address-cells = <1>;
-				#size-cells = <1>;
-				compatible = "micron,n25q512a", "jedec,spi-nor";
-				reg = <0>;
-				spi-max-frequency = <10000000>; /* input clock */
-			};
 		};
 
 		i2c@118000 {
