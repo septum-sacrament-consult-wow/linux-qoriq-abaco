@@ -34,7 +34,7 @@
 
 /dts-v1/;
 
-/include/ "e5500_power_isa.dtsi"
+/include/ "../fsl/e5500_power_isa.dtsi"
 
 / {
 	#address-cells = <2>;
