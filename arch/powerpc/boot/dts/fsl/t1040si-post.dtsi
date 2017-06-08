@@ -108,58 +108,6 @@
 	};
 };
 
-&pci2 {
-	compatible = "fsl,t1040-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
-	device_type = "pci";
-	#size-cells = <2>;
-	#address-cells = <3>;
-	bus-range = <0x0 0xff>;
-	interrupts = <22 2 0 0>;
-	fsl,iommu-parent = <&pamu0>;
-	pcie@0 {
-		reg = <0 0 0 0 0>;
-		#interrupt-cells = <1>;
-		#size-cells = <2>;
-		#address-cells = <3>;
-		device_type = "pci";
-		interrupts = <22 2 0 0>;
-		interrupt-map-mask = <0xf800 0 0 7>;
-		interrupt-map = <
-			/* IDSEL 0x0 */
-			0000 0 0 1 &mpic 42 1 0 0
-			0000 0 0 2 &mpic 9 1 0 0
-			0000 0 0 3 &mpic 10 1 0 0
-			0000 0 0 4 &mpic 11 1 0 0
-			>;
-	};
-};
-
-&pci3 {
-	compatible = "fsl,t1040-pcie", "fsl,qoriq-pcie-v2.4", "fsl,qoriq-pcie";
-	device_type = "pci";
-	#size-cells = <2>;
-	#address-cells = <3>;
-	bus-range = <0x0 0xff>;
-	interrupts = <23 2 0 0>;
-	fsl,iommu-parent = <&pamu0>;
-	pcie@0 {
-		reg = <0 0 0 0 0>;
-		#interrupt-cells = <1>;
-		#size-cells = <2>;
-		#address-cells = <3>;
-		device_type = "pci";
-		interrupts = <23 2 0 0>;
-		interrupt-map-mask = <0xf800 0 0 7>;
-		interrupt-map = <
-			/* IDSEL 0x0 */
-			0000 0 0 1 &mpic 43 1 0 0
-			0000 0 0 2 &mpic 0 1 0 0
-			0000 0 0 3 &mpic 4 1 0 0
-			0000 0 0 4 &mpic 8 1 0 0
-			>;
-	};
-};
-
 &dcsr {
 	#address-cells = <1>;
 	#size-cells = <1>;
@@ -584,14 +532,6 @@
 		fsl,espi-num-chipselects = <4>;
 	};
 
-/include/ "qoriq-esdhc-0.dtsi"
-	sdhc@114000 {
-		compatible = "fsl,t1040-esdhc", "fsl,esdhc";
-		fsl,iommu-parent = <&pamu0>;
-		fsl,liodn-reg = <&guts 0x530>; /* eSDHCLIODNR */
-		sdhci,auto-cmd12;
-		rcpm-wakeup = <&rcpm 0x00000080>;
-	};
 /include/ "qoriq-i2c-0.dtsi"
 /include/ "qoriq-i2c-1.dtsi"
 /include/ "qoriq-duart-0.dtsi"
@@ -610,6 +550,7 @@
 			fsl,iommu-parent = <&pamu0>;
 			fsl,liodn-reg = <&guts 0x520>; /* USB1LIODNR */
 			phy_type = "utmi";
+			dr_mode = "host";
 			rcpm-wakeup = <&rcpm 0x00000020>;
 			port0;
 		};
@@ -623,22 +564,6 @@
 			rcpm-wakeup = <&rcpm 0x00000010>;
 		};
 
-	display@180000 {
-		compatible = "fsl,t1040-diu", "fsl,diu";
-		reg = <0x180000 1000>;
-		interrupts = <74 2 0 0>;
-	};
-
-/include/ "qoriq-sata2-0.dtsi"
-	sata@220000 {
-		fsl,iommu-parent = <&pamu0>;
-		fsl,liodn-reg = <&guts 0x550>; /* SATA1LIODNR */
-	};
-/include/ "qoriq-sata2-1.dtsi"
-	sata@221000 {
-		fsl,iommu-parent = <&pamu0>;
-		fsl,liodn-reg = <&guts 0x554>; /* SATA2LIODNR */
-	};
 /include/ "qoriq-sec5.0-0.dtsi"
 /include/ "qoriq-pme-0.dtsi"
 /include/ "qoriq-qman3.dtsi"
@@ -696,125 +621,6 @@
 		};
 		mdio@fd000 {
 			status = "disabled";
-		};
-	};
-/include/ "qoriq-l2switch-0.dtsi"
-	l2switch@800000 {
-		interrupts = <26 2 0 0>;
-
-		port@100000 {
-			tbi-handle = <&swtbi4>;
-		};
-		port@110000 {
-			tbi-handle = <&swtbi5>;
-		};
-		port@120000 {
-			tbi-handle = <&swtbi6>;
-		};
-		port@130000 {
-			tbi-handle = <&swtbi7>;
-		};
-		port@140000 {
-			tbi-handle = <&swtbi8>;
-		};
-		port@150000 {
-			tbi-handle = <&swtbi9>;
-		};
-		port@160000 {
-			tbi-handle = <&swtbi10>;
-		};
-		port@170000 {
-			tbi-handle = <&swtbi11>;
-		};
-		port@180000 {
-			fixed-link = <2 1 2500 0 0>;
-			phy-connection-type = "sgmii";
-		};
-		port@190000 {
-			fixed-link = <3 1 2500 0 0>;
-			phy-connection-type = "sgmii";
-		};
-		mdio@700ac {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			compatible = "vitesse-9953-mdio";
-			swtbi4: tbi-phy@4 {
-				reg = <0x4>;
-				device_type = "tbi-phy";
-			};
-			swtbi5: tbi-phy@5 {
-				reg = <0x5>;
-				device_type = "tbi-phy";
-			};
-			swtbi6: tbi-phy@6 {
-				reg = <0x6>;
-				device_type = "tbi-phy";
-			};
-			swtbi7: tbi-phy@7 {
-				reg = <0x7>;
-				device_type = "tbi-phy";
-			};
-			swtbi8: tbi-phy@8 {
-				reg = <0x8>;
-				device_type = "tbi-phy";
-			};
-			swtbi9: tbi-phy@9 {
-				reg = <0x9>;
-				device_type = "tbi-phy";
-			};
-			swtbi10: tbi-phy@a {
-				reg = <0xa>;
-				device_type = "tbi-phy";
-			};
-			swtbi11: tbi-phy@b {
-				reg = <0xb>;
-				device_type = "tbi-phy";
-			};
-		};
-	};
-};
-
-&qe {
-	#address-cells = <1>;
-	#size-cells = <1>;
-	device_type = "qe";
-	compatible = "fsl,qe";
-	fsl,qe-num-riscs = <1>;
-	fsl,qe-num-snums = <28>;
-
-	qeic: interrupt-controller@80 {
-		interrupt-controller;
-		compatible = "fsl,qe-ic";
-		#address-cells = <0>;
-		#interrupt-cells = <1>;
-		reg = <0x80 0x80>;
-		interrupts = <95 2 0 0  94 2 0 0>; //high:79 low:78
-	};
-
-	ucc@2000 {
-		cell-index = <1>;
-		reg = <0x2000 0x200>;
-		interrupts = <32>;
-		interrupt-parent = <&qeic>;
-	};
-
-	ucc@2200 {
-		cell-index = <3>;
-		reg = <0x2200 0x200>;
-		interrupts = <34>;
-		interrupt-parent = <&qeic>;
-	};
-
-	muram@10000 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		compatible = "fsl,qe-muram", "fsl,cpm-muram";
-		ranges = <0x0 0x10000 0x6000>;
-
-		data-only@0 {
-			compatible = "fsl,qe-muram-data",
-			"fsl,cpm-muram-data";
-			reg = <0x0 0x6000>;
 		};
 	};
 };
