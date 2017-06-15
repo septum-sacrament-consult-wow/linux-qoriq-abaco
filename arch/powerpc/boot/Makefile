@@ -45,7 +45,7 @@ endif
 
 BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
 
-DTC_FLAGS	?= -p 1024 -i $(obj)/dts/fsl
+DTC_FLAGS	?= -p 1024 -i arch/powerpc/boot/dts/fsl
 
 $(obj)/4xx.o: BOOTCFLAGS += -mcpu=405
 $(obj)/ebony.o: BOOTCFLAGS += -mcpu=405
