@@ -36,7 +36,7 @@
  */
 
 /include/ "sbc314-t208xsi-pre.dtsi"
-/include/ "sbc314-t208xrdb.dtsi"
+/include/ "sbc314-tx.dtsi"
 
 / {
 	model = "abaco,SBC314-T2080";
@@ -131,6 +131,7 @@
 	};
 };
 
+/include/ "sbc314-tx.dtsi"
 /include/ "sbc314-t2080si-post.dtsi"
 /include/ "qoriq-dpaa-res3.dtsi"
 /include/ "qoriq-qman-ceetm0.dtsi"
