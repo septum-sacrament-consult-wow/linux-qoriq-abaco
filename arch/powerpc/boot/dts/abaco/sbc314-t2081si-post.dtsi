@@ -571,14 +571,6 @@
 		fsl,espi-num-chipselects = <4>;
 	};
 
-/include/ "qoriq-esdhc-0.dtsi"
-	sdhc@114000 {
-		compatible = "fsl,t2080-esdhc", "fsl,esdhc";
-		fsl,iommu-parent = <&pamu1>;
-		fsl,liodn-reg = <&guts 0x530>; /* SDMMCLIODNR */
-		sdhci,auto-cmd12;
-		rcpm-wakeup = <&rcpm 0x00000080>;
-	};
 /include/ "qoriq-i2c-0.dtsi"
 /include/ "qoriq-i2c-1.dtsi"
 /include/ "qoriq-duart-0.dtsi"
