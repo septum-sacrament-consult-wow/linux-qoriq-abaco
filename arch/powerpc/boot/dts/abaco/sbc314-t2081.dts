@@ -55,77 +55,97 @@
 			ranges = <0 0 0xc 0x30000000 0 0x10000000>;
 		};
 	};
+
+	fsl,dpaa {
+		compatible = "fsl,t2080-dpaa", "fsl,dpaa";
+		ethernet@0 {
+			compatible = "fsl,t2080-dpa-ethernet", "fsl,dpa-ethernet";
+			fsl,fman-mac = <&enet0>;
+		};
+		ethernet@1 {
+			compatible = "fsl,t2080-dpa-ethernet", "fsl,dpa-ethernet";
+			fsl,fman-mac = <&enet1>;
+		};
+	};
+
+
+	pci2: pcie@ffe260000 {
+		reg = <0xf 0xfe260000 0 0x10000>;
+		ranges = <0x02000000 0 0xc0000000 0xc 0x00000000 0x0 0x40000000
+			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
+		pcie@0 {
+			ranges = <0x02000000 0 0xc0000000
+				  0x02000000 0 0xc0000000
+				  0 0x40000000
+
+				  0x01000000 0 0x00000000
+				  0x01000000 0 0x00000000
+				  0 0x00010000>;
+		};
+	};
+
+	pci3: pcie@ffe270000 {
+		reg = <0xf 0xfe270000 0 0x10000>;
+		ranges = <0x02000000 0x0 0xc0000000 0xc 0x40000000 0x0 0x20000000
+			  0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000>;
+		pcie@0 {
+			ranges = <0x02000000 0 0xc0000000
+				  0x02000000 0 0xc0000000
+				  0 0x10000000
+
+				  0x01000000 0 0x00000000
+				  0x01000000 0 0x00000000
+				  0 0x00010000>;
+		};
+	};
 };
 
 &soc {
 	fman0: fman@400000 {
-		fm1mac1: ethernet@e0000 { /* 10GEC3 */
-			phy-handle = <&xg_aq1202_phy3>;
-			phy-connection-type = "xgmii";
-		};
+		rcpm-wakeup = <&rcpm 0x00000008>;
 
-		fm1mac2: ethernet@e2000 { /* 10GEC4 */
-			phy-handle = <&xg_aq1202_phy4>;
-			phy-connection-type = "xgmii";
-		};
-
-		fm1mac3: ethernet@e4000 {
-			phy-handle = <&rgmii_phy1>;
+		enet0: ethernet@e4000 {
+			phy-handle = <&phy_rgmii_0>;
 			phy-connection-type = "rgmii";
+			rcpm-wakeup = <&rcpm 0x10000000>;	
 		};
 
-		fm1mac4: ethernet@e6000 {
-			phy-handle = <&rgmii_phy2>;
+		enet1: ethernet@f2000 {
+			phy-handle = <&phy_rgmii_1>;
 			phy-connection-type = "rgmii";
+			cell-index = <3>;
+			compatible = "fsl,fman-memac";
+			reg = <0xf2000 0x1000>;
+			fsl,port-handles = <&fman0_rx9 &fman0_tx9>;
+			rcpm-wakeup = <&rcpm 0x08000000>;
 		};
 
-		fm1mac5: ethernet@e8000 {
+		fman0_rx9: port@91000 {
+			cell-index = <3>;
+			compatible = "fsl,fman-port-1g-rx";
+			reg = <0x91000 0x1000>;
 		};
 
-		fm1mac6: ethernet@ea000 {
-		};
+		fman0_tx9: port@b1000 {
+			cell-index = <3>;
+			compatible = "fsl,fman-port-1g-tx";
+			reg = <0xb1000 0x1000>;
+			fsl,qman-channel-id = <0x801>;
+			};
 
-		fm1mac9: ethernet@f0000 { /* 10GEC1 */
-			phy-handle = <&xg_cs4315_phy1>;
-			phy-connection-type = "xgmii";
-		};
-
-		fm1mac10: ethernet@f2000 { /* 10GEC2 */
-			phy-handle = <&xg_cs4315_phy2>;
-			phy-connection-type = "xgmii";
+		mdio@f3000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "fsl,fman-memac-mdio";
+			reg = <0xf3000 0x1000>;
 		};
 
 		mdio0: mdio@fc000 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			rgmii_phy1: ethernet-phy@1 {
-				reg = <0x1>;
+			phy_rgmii_0: ethernet-phy@00 {
+				reg = <0x00>;
 			};
-			rgmii_phy2: ethernet-phy@2 {
-				reg = <0x2>;
-			};
-		};
-
-		xmdio0: mdio@fd000 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			xg_cs4315_phy1: ethernet-phy@c {
-				compatible = "ethernet-phy-ieee802.3-c45";
-				reg = <0xc>;
-			};
-			xg_cs4315_phy2: ethernet-phy@d {
-				compatible = "ethernet-phy-ieee802.3-c45";
-				reg = <0xd>;
-			};
-			xg_aq1202_phy3: ethernet-phy@0 {
-				compatible = "ethernet-phy-ieee802.3-c45";
-				interrupts = <1 1 0 0>;
-				reg = <0x0>;
-			};
-			xg_aq1202_phy4: ethernet-phy@1 {
-				compatible = "ethernet-phy-ieee802.3-c45";
-				interrupts = <2 1 0 0>;
-				reg = <0x1>;
+			phy_rgmii_1: ethernet-phy@01 {
+				reg = <0x01>;
 			};
 		};
 	};

@@ -54,7 +54,7 @@
 	interrupts = <25 2 0 0>;
 };
 
-/* controller at 0x240000 */
+/*
 &pci0 {
 	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
 	device_type = "pci";
@@ -72,7 +72,6 @@
 		interrupts = <20 2 0 0>;
 		interrupt-map-mask = <0xf800 0 0 7>;
 		interrupt-map = <
-			/* IDSEL 0x0 */
 			0000 0 0 1 &mpic 40 1 0 0
 			0000 0 0 2 &mpic 1 1 0 0
 			0000 0 0 3 &mpic 2 1 0 0
@@ -81,7 +80,6 @@
 	};
 };
 
-/* controller at 0x250000 */
 &pci1 {
 	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
 	device_type = "pci";
@@ -99,11 +97,64 @@
 		interrupts = <21 2 0 0>;
 		interrupt-map-mask = <0xf800 0 0 7>;
 		interrupt-map = <
-			/* IDSEL 0x0 */
 			0000 0 0 1 &mpic 41 1 0 0
 			0000 0 0 2 &mpic 5 1 0 0
 			0000 0 0 3 &mpic 6 1 0 0
 			0000 0 0 4 &mpic 7 1 0 0
+		>;
+	};
+};
+*/
+/* controller at 0x260000 */
+&pci2 {
+	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
+	device_type = "pci";
+	#size-cells = <2>;
+	#address-cells = <3>;
+	bus-range = <0x0 0xff>;
+	interrupts = <22 2 0 0>;
+	fsl,iommu-parent = <&pamu0>;
+	pcie@0 {
+		reg = <0 0 0 0 0>;
+		#interrupt-cells = <1>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		device_type = "pci";
+		interrupts = <22 2 0 0>;
+		interrupt-map-mask = <0xf800 0 0 7>;
+		interrupt-map = <
+			/* IDSEL 0x0 */
+			0000 0 0 1 &mpic 42 1 0 0
+			0000 0 0 2 &mpic 9 1 0 0
+			0000 0 0 3 &mpic 10 1 0 0
+			0000 0 0 4 &mpic 11 1 0 0
+		>;
+	};
+};
+
+/* controller at 0x270000 */
+&pci3 {
+	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie-v3.0", "fsl,qoriq-pcie";
+	device_type = "pci";
+	#size-cells = <2>;
+	#address-cells = <3>;
+	bus-range = <0x0 0xff>;
+	interrupts = <23 2 0 0>;
+	fsl,iommu-parent = <&pamu0>;
+	pcie@0 {
+		reg = <0 0 0 0 0>;
+		#interrupt-cells = <1>;
+		#size-cells = <2>;
+		#address-cells = <3>;
+		device_type = "pci";
+		interrupts = <23 2 0 0>;
+		interrupt-map-mask = <0xf800 0 0 7>;
+		interrupt-map = <
+			/* IDSEL 0x0 */
+			0000 0 0 1 &mpic 43 1 0 0
+			0000 0 0 2 &mpic 0 1 0 0
+			0000 0 0 3 &mpic 4 1 0 0
+			0000 0 0 4 &mpic 8 1 0 0
 		>;
 	};
 };
@@ -117,9 +168,7 @@
 		compatible = "fsl,t2080-dcsr-epu", "fsl,dcsr-epu";
 		interrupts = <52 2 0 0
 			      84 2 0 0
-			      85 2 0 0
-			      94 2 0 0
-			      95 2 0 0>;
+			      85 2 0 0>;
 		reg = <0x0 0x1000>;
 	};
 	dcsr-npc {
@@ -148,7 +197,7 @@
 		reg = <0x18000 0x1000>;
 	};
 	dcsr-rcpm@22000 {
-		compatible = "fsl,t2080-dcsr-rcpm", "fsl,dcsr-rcpm";
+		compatible = "fsl,t1040-dcsr-rcpm", "fsl,dcsr-rcpm";
 		reg = <0x22000 0x1000>;
 	};
 	dcsr-snpc@30000 {
@@ -158,10 +207,6 @@
 	dcsr-snpc@31000 {
 		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
 		reg = <0x31000 0x1000 0x1042000 0x10000>;
-	};
-	dcsr-snpc@32000 {
-		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
-		reg = <0x32000 0x1000 0x1062000 0x10000>;
 	};
 	dcsr-cpu-sb-proxy@100000 {
 		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
@@ -521,7 +566,7 @@
 		};
 	};
 
-/include/ "qoriq-mpic4.3.dtsi"
+/include/ "qoriq-mpic.dtsi"
 
 	guts: global-utilities@e0000 {
 		compatible = "fsl,t2080-device-config", "fsl,qoriq-device-config-2.0";
@@ -536,7 +581,7 @@
 	};
 
 	rcpm: global-utilities@e2000 {
-		compatible = "fsl,t2080-rcpm", "fsl,qoriq-rcpm-2.0";
+		compatible = "fsl,t1042-rcpm", "fsl,qoriq-rcpm-2.0";
 		reg = <0xe2000 0x1000>;
 	};
 
@@ -606,14 +651,7 @@
 /include/ "qoriq-bman1.dtsi"
 /include/ "qoriq-qman3.dtsi"
 /include/ "qoriq-fman3-0.dtsi"
-/include/ "qoriq-fman3-0-1g-0.dtsi"
-/include/ "qoriq-fman3-0-1g-1.dtsi"
 /include/ "qoriq-fman3-0-1g-2.dtsi"
-/include/ "qoriq-fman3-0-1g-3.dtsi"
-/include/ "qoriq-fman3-0-1g-4.dtsi"
-/include/ "qoriq-fman3-0-1g-5.dtsi"
-/include/ "qoriq-fman3-0-10g-0.dtsi"
-/include/ "qoriq-fman3-0-10g-1.dtsi"
 	fman0: fman@400000 {
 		/* tx - 10g - 2 */
 		port@a8000 {
