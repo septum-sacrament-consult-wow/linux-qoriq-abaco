@@ -39,8 +39,8 @@
 /include/ "sbc314-tx.dtsi"
 
 / {
-	model = "abaco,SBC314-T2080";
-	compatible = "abaco,SBC314-T2080";
+	model = "abaco,SBC314-T2081";
+	compatible = "abaco,SBC314-T2081";
 	#address-cells = <2>;
 	#size-cells = <2>;
 	interrupt-parent = <&mpic>;
