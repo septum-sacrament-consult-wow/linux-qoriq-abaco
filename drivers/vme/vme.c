@@ -335,10 +335,9 @@ struct vme_resource *vme_slave_request(struct vme_dev *vdev, u32 address,
 		goto err_image;
 
 	resource = kmalloc(sizeof(struct vme_resource), GFP_KERNEL);
-	if (resource == NULL) {
-		printk(KERN_WARNING "Unable to allocate resource structure\n");
+	if (!resource)
 		goto err_alloc;
-	}
+
 	resource->type = VME_SLAVE;
 	resource->entry = &allocated_image->list;
 
@@ -540,10 +539,9 @@ struct vme_resource *vme_master_request(struct vme_dev *vdev, u32 address,
 	}
 
 	resource = kmalloc(sizeof(struct vme_resource), GFP_KERNEL);
-	if (resource == NULL) {
-		printk(KERN_ERR "Unable to allocate resource structure\n");
+	if (!resource)
 		goto err_alloc;
-	}
+
 	resource->type = VME_MASTER;
 	resource->entry = &allocated_image->list;
 
@@ -917,10 +915,9 @@ struct vme_resource *vme_dma_request(struct vme_dev *vdev, u32 route)
 		goto err_ctrlr;
 
 	resource = kmalloc(sizeof(struct vme_resource), GFP_KERNEL);
-	if (resource == NULL) {
-		printk(KERN_WARNING "Unable to allocate resource structure\n");
+	if (!resource)
 		goto err_alloc;
-	}
+
 	resource->type = VME_DMA;
 	resource->entry = &allocated_ctrlr->list;
 
@@ -960,10 +957,9 @@ struct vme_dma_list *vme_new_dma_list(struct vme_resource *resource)
 	ctrlr = list_entry(resource->entry, struct vme_dma_resource, list);
 
 	dma_list = kmalloc(sizeof(struct vme_dma_list), GFP_KERNEL);
-	if (dma_list == NULL) {
-		printk(KERN_ERR "Unable to allocate memory for new DMA list\n");
+	if (!dma_list)
 		return NULL;
-	}
+
 	INIT_LIST_HEAD(&dma_list->entries);
 	dma_list->parent = ctrlr;
 	mutex_init(&dma_list->mtx);
@@ -989,16 +985,12 @@ struct vme_dma_attr *vme_dma_pattern_attribute(u32 pattern, u32 type)
 	struct vme_dma_pattern *pattern_attr;
 
 	attributes = kmalloc(sizeof(struct vme_dma_attr), GFP_KERNEL);
-	if (attributes == NULL) {
-		printk(KERN_ERR "Unable to allocate memory for attributes structure\n");
+	if (!attributes)
 		goto err_attr;
-	}
 
 	pattern_attr = kmalloc(sizeof(struct vme_dma_pattern), GFP_KERNEL);
-	if (pattern_attr == NULL) {
-		printk(KERN_ERR "Unable to allocate memory for pattern attributes\n");
+	if (!pattern_attr)
 		goto err_pat;
-	}
 
 	attributes->type = VME_DMA_PATTERN;
 	attributes->private = (void *)pattern_attr;
@@ -1033,18 +1025,12 @@ struct vme_dma_attr *vme_dma_pci_attribute(dma_addr_t address)
 	/* XXX Run some sanity checks here */
 
 	attributes = kmalloc(sizeof(struct vme_dma_attr), GFP_KERNEL);
-	if (attributes == NULL) {
-		printk(KERN_ERR "Unable to allocate memory for attributes structure\n");
+	if (!attributes)
 		goto err_attr;
-	}
 
 	pci_attr = kmalloc(sizeof(struct vme_dma_pci), GFP_KERNEL);
-	if (pci_attr == NULL) {
-		printk(KERN_ERR "Unable to allocate memory for PCI attributes\n");
+	if (!pci_attr)
 		goto err_pci;
-	}
-
-
 
 	attributes->type = VME_DMA_PCI;
 	attributes->private = (void *)pci_attr;
@@ -1081,16 +1067,12 @@ struct vme_dma_attr *vme_dma_vme_attribute(unsigned long long address,
 
 	attributes = kmalloc(
 		sizeof(struct vme_dma_attr), GFP_KERNEL);
-	if (attributes == NULL) {
-		printk(KERN_ERR "Unable to allocate memory for attributes structure\n");
+	if (!attributes)
 		goto err_attr;
-	}
 
 	vme_attr = kmalloc(sizeof(struct vme_dma_vme), GFP_KERNEL);
-	if (vme_attr == NULL) {
-		printk(KERN_ERR "Unable to allocate memory for VME attributes\n");
+	if (!vme_attr)
 		goto err_vme;
-	}
 
 	attributes->type = VME_DMA_VME;
 	attributes->private = (void *)vme_attr;
@@ -1537,10 +1519,9 @@ struct vme_resource *vme_lm_request(struct vme_dev *vdev)
 		goto err_lm;
 
 	resource = kmalloc(sizeof(struct vme_resource), GFP_KERNEL);
-	if (resource == NULL) {
-		printk(KERN_ERR "Unable to allocate resource structure\n");
+	if (!resource)
 		goto err_alloc;
-	}
+
 	resource->type = VME_LM;
 	resource->entry = &allocated_lm->list;
 
