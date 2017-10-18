@@ -68,6 +68,7 @@ struct ca91cx42_dma_descriptor {
 struct ca91cx42_dma_entry {
 	struct ca91cx42_dma_descriptor descriptor;
 	struct list_head list;
+	dma_addr_t dma_handle;
 };
 
 /* Universe Register Offsets */
