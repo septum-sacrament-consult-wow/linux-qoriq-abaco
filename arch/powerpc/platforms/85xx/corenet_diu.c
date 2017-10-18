@@ -77,6 +77,20 @@ exit:
 }
 
 /**
+ * ppc11a_set_monitor_port: switch the output to a different monitor port
+ *
+ * Currently we only have one port but leaving function here in case
+ * things change. This also seems to set LCD backlights etc so may need this 
+ * as a point to add things
+*/
+static void ppc11a_set_monitor_port(enum fsl_diu_monitor_port port)
+{
+
+  return;
+
+}
+
+/**
  * t1042rdb_set_pixel_clock: program the DIU's clock
  *
  * @pixclock: the wavelength, in picoseconds, of the clock
@@ -151,6 +165,14 @@ static void t1042rdb_diu_init(void)
 	diu_ops.valid_monitor_port	= t1042rdb_valid_monitor_port;
 }
 
+static void ppc11a_diu_init(void)
+{
+	diu_ops.set_monitor_port	= ppc11a_set_monitor_port;
+	diu_ops.set_pixel_clock		= t1042rdb_set_pixel_clock;
+	diu_ops.valid_monitor_port	= t1042rdb_valid_monitor_port;
+	/* PPC11A is a clone of T1042RDB for this */
+}
+
 static int __init corenet_diu_init(void)
 {
 	struct device_node *np;
@@ -162,6 +184,10 @@ static int __init corenet_diu_init(void)
 	/* T1042RDB_PI board */
 	if (of_find_compatible_node(NULL, NULL, "fsl,T1042RDB_PI"))
 		t1042rdb_diu_init();
+
+	/* PPC11A_T1042 board - not the T2081 variant */
+	if (of_find_compatible_node(NULL, NULL, "abaco,PPC11A-T1042"))
+		ppc11a_diu_init();
 
 	return 0;
 }
