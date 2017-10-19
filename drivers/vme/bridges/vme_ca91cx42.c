@@ -47,6 +47,8 @@ static const struct pci_device_id ca91cx42_ids[] = {
 	{ },
 };
 
+MODULE_DEVICE_TABLE(pci, ca91cx42_ids);
+
 static struct pci_driver ca91cx42_driver = {
 	.name = driver_name,
 	.id_table = ca91cx42_ids,
@@ -1650,8 +1652,8 @@ static int ca91cx42_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		goto err_resource;
 	}
 
-	/* map registers in BAR 0 */
-	ca91cx42_device->base = ioremap_nocache(pci_resource_start(pdev, 0),
+	/* map registers in BAR 1 - PPC11A memory BAR */
+	ca91cx42_device->base = ioremap_nocache(pci_resource_start(pdev, 1),
 		4096);
 	if (!ca91cx42_device->base) {
 		dev_err(&pdev->dev, "Unable to remap CRG region\n");
