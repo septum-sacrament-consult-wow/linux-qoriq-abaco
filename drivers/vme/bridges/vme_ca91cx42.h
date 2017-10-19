@@ -55,14 +55,14 @@ struct ca91cx42_driver {
 
 /* See Page 2-77 in the Universe User Manual */
 struct ca91cx42_dma_descriptor {
-	unsigned int dctl;      /* DMA Control */
-	unsigned int dtbc;      /* Transfer Byte Count */
-	unsigned int dla;       /* PCI Address */
-	unsigned int res1;      /* Reserved */
-	unsigned int dva;       /* Vme Address */
-	unsigned int res2;      /* Reserved */
-	unsigned int dcpp;      /* Pointer to Numed Cmd Packet with rPN */
-	unsigned int res3;      /* Reserved */
+	__be32 dctl;      /* DMA Control */
+	__be32 dtbc;      /* Transfer Byte Count */
+	__be32 dla;       /* PCI Address */
+	__be32 res1;      /* Reserved */
+	__be32 dva;       /* Vme Address */
+	__be32 res2;      /* Reserved */
+	__be32 dcpp;      /* Pointer to Numed Cmd Packet with rPN */
+	__be32 res3;      /* Reserved */
 };
 
 struct ca91cx42_dma_entry {
