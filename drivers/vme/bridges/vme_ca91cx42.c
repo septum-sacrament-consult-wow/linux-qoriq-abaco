@@ -204,7 +204,7 @@ static int ca91cx42_irq_init(struct vme_bridge *ca91cx42_bridge)
 	bridge = ca91cx42_bridge->driver_priv;
 
 	/* Need pdev */
-	pdev = container_of(ca91cx42_bridge->parent, struct pci_dev, dev);
+	pdev = to_pci_dev(ca91cx42_bridge->parent);
 
 	/* Initialise list for VME bus errors */
 	INIT_LIST_HEAD(&ca91cx42_bridge->vme_errors);
@@ -296,8 +296,7 @@ static void ca91cx42_irq_set(struct vme_bridge *ca91cx42_bridge, int level,
 	iowrite32(tmp, bridge->base + LINT_EN);
 
 	if ((state == 0) && (sync != 0)) {
-		pdev = container_of(ca91cx42_bridge->parent, struct pci_dev,
-			dev);
+		pdev = to_pci_dev(ca91cx42_bridge->parent);
 
 		synchronize_irq(pdev->irq);
 	}
@@ -387,7 +386,7 @@ static int ca91cx42_slave_set(struct vme_slave_resource *image, int enabled,
 	 * accordingly
 	 */
 	vme_bound = vme_base + size;
-	pci_offset = pci_base - vme_base;
+	pci_offset = (unsigned long long)pci_base - vme_base;
 
 	if ((i == 0) || (i == 4))
 		granularity = 0x1000;
@@ -521,7 +520,7 @@ static int ca91cx42_alloc_resource(struct vme_master_resource *image,
 		dev_err(ca91cx42_bridge->parent, "Dev entry NULL\n");
 		return -EINVAL;
 	}
-	pdev = container_of(ca91cx42_bridge->parent, struct pci_dev, dev);
+	pdev = to_pci_dev(ca91cx42_bridge->parent);
 
 	existing_size = (unsigned long long)(image->bus_resource.end -
 		image->bus_resource.start);
@@ -608,10 +607,13 @@ static int ca91cx42_master_set(struct vme_master_resource *image, int enabled,
 	unsigned long long pci_bound, vme_offset, pci_base;
 	struct vme_bridge *ca91cx42_bridge;
 	struct ca91cx42_driver *bridge;
+	struct pci_bus_region region;
+	struct pci_dev *pdev;
 
 	ca91cx42_bridge = image->parent;
 
 	bridge = ca91cx42_bridge->driver_priv;
+	pdev = to_pci_dev(ca91cx42_bridge->parent);
 
 	i = image->number;
 
@@ -649,14 +651,24 @@ static int ca91cx42_master_set(struct vme_master_resource *image, int enabled,
 		goto err_res;
 	}
 
-	pci_base = (unsigned long long)image->bus_resource.start;
+	if (size == 0) {
+		pci_base = 0;
+		pci_bound = 0;
+		vme_offset = 0;
+	} else {
+		pcibios_resource_to_bus(pdev->bus, &region,
+					&image->bus_resource);
+		pci_base = region.start;
 
-	/*
-	 * Bound address is a valid address for the window, adjust
-	 * according to window granularity.
-	 */
-	pci_bound = pci_base + size;
-	vme_offset = vme_base - pci_base;
+		/* WAS: pci_base = (unsigned long long)image->bus_resource.start; */
+
+		/*
+		 * Bound address is a valid address for the window, adjust
+		 * according to window granularity.
+		 */
+		pci_bound = pci_base + size;
+		vme_offset = vme_base - pci_base;
+	}
 
 	/* Disable while we are mucking around */
 	temp_ctl = ioread32(bridge->base + CA91CX42_LSI_CTL[i]);
@@ -862,7 +874,7 @@ static ssize_t ca91cx42_master_read(struct vme_master_resource *image,
 	void *buf, size_t count, loff_t offset)
 {
 	ssize_t retval;
-	void __iomem *addr = image->kern_base + offset;
+	void __iomem *addr = (void *)image->kern_base + offset;
 	unsigned int done = 0;
 	unsigned int count32;
 
@@ -921,7 +933,7 @@ static ssize_t ca91cx42_master_write(struct vme_master_resource *image,
 	void *buf, size_t count, loff_t offset)
 {
 	ssize_t retval;
-	void __iomem *addr = image->kern_base + offset;
+	void __iomem *addr = (void *)image->kern_base + offset;
 	unsigned int done = 0;
 	unsigned int count32;
 
@@ -1517,8 +1529,7 @@ static void *ca91cx42_alloc_consistent(struct device *parent, size_t size,
 {
 	struct pci_dev *pdev;
 
-	/* Find pci_dev container of dev */
-	pdev = container_of(parent, struct pci_dev, dev);
+	pdev = to_pci_dev(parent);
 
 	return pci_alloc_consistent(pdev, size, dma);
 }
@@ -1528,8 +1539,7 @@ static void ca91cx42_free_consistent(struct device *parent, size_t size,
 {
 	struct pci_dev *pdev;
 
-	/* Find pci_dev container of dev */
-	pdev = container_of(parent, struct pci_dev, dev);
+	pdev = to_pci_dev(parent);
 
 	pci_free_consistent(pdev, size, vaddr, dma);
 }
@@ -1642,6 +1652,14 @@ static int ca91cx42_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	retval = pci_enable_device(pdev);
 	if (retval) {
 		dev_err(&pdev->dev, "Unable to enable device\n");
+		goto err_enable;
+	}
+
+	/* Ensure 32-bit address handling */
+	if ((pci_set_dma_mask(pdev, DMA_BIT_MASK(32)) != 0) ||
+	    (pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32)) != 0)) {
+		dev_err(&pdev->dev, "pci_set_dma_mask fail %p\n", pdev);
+		retval = -ENODEV;
 		goto err_enable;
 	}
 
