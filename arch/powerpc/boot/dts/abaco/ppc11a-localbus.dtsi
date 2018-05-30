@@ -96,6 +96,24 @@
 			interrupt-parent = <&cpldirqc0>;
 		};
 
+		cpldgpio1: gpio-controller@3,67C {
+			compatible = "abaco,cpldgpio";
+			reg = <0x3 0x67C 0xB>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupts = <0x0>;
+			interrupt-parent = <&cpldirqc0>;
+		};
+
+		cpldgpio2: gpio-controller@3,688 {
+			compatible = "abaco,cpldgpio";
+			reg = <0x3 0x688 0xB>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupts = <0x0>;
+			interrupt-parent = <&cpldirqc0>;
+		};
+
 		serial4: serial@4,0 {
 			#address-cells = <1>;
 			#size-cells = <1>;
