@@ -1033,6 +1033,7 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 	struct ca91cx42_dma_entry *entry, *prev;
 	struct vme_dma_pci *pci_attr;
 	struct vme_dma_vme *vme_attr;
+	dma_addr_t desc_ptr;
 	int retval = 0;
 	struct device *dev;
 
@@ -1157,11 +1158,8 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 		prev = list_entry(entry->list.prev, struct ca91cx42_dma_entry,
 			list);
 		/* We need the bus address for the pointer */
-		/* WAS: desc_ptr = virt_to_bus(&entry->descriptor); */
-		entry->dma_handle = dma_map_single(dev, &entry->descriptor,
-			sizeof(struct ca91cx42_dma_descriptor), DMA_TO_DEVICE);
-
-		prev->descriptor.dcpp = entry->dma_handle & ~CA91CX42_DCPP_M;
+		desc_ptr = virt_to_bus(&entry->descriptor);
+		prev->descriptor.dcpp = desc_ptr & ~CA91CX42_DCPP_M;
 	}
 
 	return 0;
@@ -1195,6 +1193,7 @@ static int ca91cx42_dma_list_exec(struct vme_dma_list *list)
 	struct vme_dma_resource *ctrlr;
 	struct ca91cx42_dma_entry *entry;
 	int retval = 0;
+	dma_addr_t bus_addr;
 	u32 val;
 	struct device *dev;
 	struct ca91cx42_driver *bridge;
@@ -1223,14 +1222,12 @@ static int ca91cx42_dma_list_exec(struct vme_dma_list *list)
 	entry = list_first_entry(&list->entries, struct ca91cx42_dma_entry,
 		list);
 
-	/* WAS: bus_addr = virt_to_bus(&entry->descriptor); */
-	entry->dma_handle = dma_map_single(dev, &entry->descriptor,
-		sizeof(struct ca91cx42_dma_descriptor), DMA_TO_DEVICE);
+	bus_addr = virt_to_bus(&entry->descriptor);
 
 	mutex_unlock(&ctrlr->mtx);
 
 	iowrite32(0, bridge->base + DTBC);
-	iowrite32(entry->dma_handle & ~CA91CX42_DCPP_M, bridge->base + DCPP);
+	iowrite32(bus_addr & ~CA91CX42_DCPP_M, bridge->base + DCPP);
 
 	/* Start the operation */
 	val = ioread32(bridge->base + DGCS);
@@ -1278,15 +1275,10 @@ static int ca91cx42_dma_list_empty(struct vme_dma_list *list)
 	struct list_head *pos, *temp;
 	struct ca91cx42_dma_entry *entry;
 
-	struct vme_bridge *ca91cx42_bridge = list->parent->parent;
-
 	/* detach and free each entry */
 	list_for_each_safe(pos, temp, &list->entries) {
 		list_del(pos);
 		entry = list_entry(pos, struct ca91cx42_dma_entry, list);
-
-		dma_unmap_single(ca91cx42_bridge->parent, entry->dma_handle,
-			sizeof(struct ca91cx42_dma_descriptor), DMA_TO_DEVICE);
 		kfree(entry);
 	}
 
