@@ -381,7 +381,7 @@ static int ca91cx42_slave_set(struct vme_slave_resource *image, int enabled,
 	 * accordingly
 	 */
 	vme_bound = vme_base + size;
-	pci_offset = (unsigned long lon)pci_base - vme_base;
+	pci_offset = pci_base - vme_base;
 
 	if ((i == 0) || (i == 4))
 		granularity = 0x1000;
@@ -865,7 +865,7 @@ static ssize_t ca91cx42_master_read(struct vme_master_resource *image,
 	void *buf, size_t count, loff_t offset)
 {
 	ssize_t retval;
-	void __iomem *addr = (void *)image->kern_base + offset;
+	void __iomem *addr = image->kern_base + offset;
 	unsigned int done = 0;
 	unsigned int count32;
 
@@ -924,7 +924,7 @@ static ssize_t ca91cx42_master_write(struct vme_master_resource *image,
 	void *buf, size_t count, loff_t offset)
 {
 	ssize_t retval;
-	void __iomem *addr = (void *)image->kern_base + offset;
+	void __iomem *addr = image->kern_base + offset;
 	unsigned int done = 0;
 	unsigned int count32;
 
