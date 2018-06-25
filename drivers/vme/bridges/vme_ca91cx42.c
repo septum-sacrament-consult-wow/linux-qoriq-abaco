@@ -600,10 +600,13 @@ static int ca91cx42_master_set(struct vme_master_resource *image, int enabled,
 	unsigned long long pci_bound, vme_offset, pci_base;
 	struct vme_bridge *ca91cx42_bridge;
 	struct ca91cx42_driver *bridge;
+	struct pci_bus_region region;
+	struct pci_dev *pdev;
 
 	ca91cx42_bridge = image->parent;
 
 	bridge = ca91cx42_bridge->driver_priv;
+	pdev = to_pci_dev(ca91cx42_bridge->parent);
 
 	i = image->number;
 
@@ -641,14 +644,22 @@ static int ca91cx42_master_set(struct vme_master_resource *image, int enabled,
 		goto err_res;
 	}
 
-	pci_base = (unsigned long long)image->bus_resource.start;
+	if (size == 0) {
+		pci_base = 0;
+		pci_bound = 0;
+		vme_offset = 0;
+	} else {
+		pcibios_resource_to_bus(pdev->bus, &region,
+					&image->bus_resource);
+		pci_base = region.start;
 
-	/*
-	 * Bound address is a valid address for the window, adjust
-	 * according to window granularity.
-	 */
-	pci_bound = pci_base + size;
-	vme_offset = vme_base - pci_base;
+		/*
+		 * Bound address is a valid address for the window, adjust
+		 * according to window granularity.
+		 */
+		pci_bound = pci_base + size;
+		vme_offset = vme_base - pci_base;
+	}
 
 	/* Disable while we are mucking around */
 	temp_ctl = ioread32(bridge->base + CA91CX42_LSI_CTL[i]);
@@ -1025,23 +1036,29 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 	struct vme_dma_attr *src, struct vme_dma_attr *dest, size_t count)
 {
 	struct ca91cx42_dma_entry *entry, *prev;
+	dma_addr_t dma_handle;
 	struct vme_dma_pci *pci_attr;
 	struct vme_dma_vme *vme_attr;
-	dma_addr_t desc_ptr;
 	int retval = 0;
 	struct device *dev;
+	struct ca91cx42_driver *bridge;
 
 	dev = list->parent->parent->parent;
+	bridge = list->parent->parent->driver_priv;
 
 	/* XXX descriptor must be aligned on 64-bit boundaries */
-	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
+	/* Get an entry from the pool */
+	entry = dma_pool_alloc(bridge->dma_pool, GFP_KERNEL, &dma_handle);
 	if (!entry) {
+		dev_err(dev, "Failed to allocate memory for dma resource "
+			"structure\n");
 		retval = -ENOMEM;
 		goto err_mem;
 	}
 
 	/* Test descriptor alignment */
-	if ((unsigned long)&entry->descriptor & CA91CX42_DCPP_M) {
+	if (((unsigned long)&entry->descriptor & CA91CX42_DCPP_M) ||
+		((unsigned long)dma_handle & CA91CX42_DCPP_M)) {
 		dev_err(dev, "Descriptor not aligned to 16 byte boundary as "
 			"required: %p\n", &entry->descriptor);
 		retval = -EINVAL;
@@ -1049,6 +1066,9 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 	}
 
 	memset(&entry->descriptor, 0, sizeof(entry->descriptor));
+
+	/* Save off dma_handle for device */
+	entry->dma_handle = dma_handle;
 
 	if (dest->type == VME_DMA_VME) {
 		entry->descriptor.dctl |= CA91CX42_DCTL_L2V;
@@ -1149,9 +1169,7 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 	if (entry->list.prev != &list->entries) {
 		prev = list_entry(entry->list.prev, struct ca91cx42_dma_entry,
 			list);
-		/* We need the bus address for the pointer */
-		desc_ptr = virt_to_bus(&entry->descriptor);
-		prev->descriptor.dcpp = desc_ptr & ~CA91CX42_DCPP_M;
+		prev->descriptor.dcpp = entry->dma_handle & ~CA91CX42_DCPP_M;
 	}
 
 	return 0;
@@ -1185,7 +1203,6 @@ static int ca91cx42_dma_list_exec(struct vme_dma_list *list)
 	struct vme_dma_resource *ctrlr;
 	struct ca91cx42_dma_entry *entry;
 	int retval;
-	dma_addr_t bus_addr;
 	u32 val;
 	struct device *dev;
 	struct ca91cx42_driver *bridge;
@@ -1214,12 +1231,10 @@ static int ca91cx42_dma_list_exec(struct vme_dma_list *list)
 	entry = list_first_entry(&list->entries, struct ca91cx42_dma_entry,
 		list);
 
-	bus_addr = virt_to_bus(&entry->descriptor);
-
 	mutex_unlock(&ctrlr->mtx);
 
 	iowrite32(0, bridge->base + DTBC);
-	iowrite32(bus_addr & ~CA91CX42_DCPP_M, bridge->base + DCPP);
+	iowrite32(entry->dma_handle & ~CA91CX42_DCPP_M, bridge->base + DCPP);
 
 	/* Start the operation */
 	val = ioread32(bridge->base + DGCS);
@@ -1278,12 +1293,13 @@ static int ca91cx42_dma_list_empty(struct vme_dma_list *list)
 {
 	struct list_head *pos, *temp;
 	struct ca91cx42_dma_entry *entry;
+	struct ca91cx42_driver *ca91cx42_bridge = list->parent->parent->driver_priv;
 
 	/* detach and free each entry */
 	list_for_each_safe(pos, temp, &list->entries) {
 		list_del(pos);
 		entry = list_entry(pos, struct ca91cx42_dma_entry, list);
-		kfree(entry);
+		dma_pool_free(ca91cx42_bridge->dma_pool, entry, entry->dma_handle);
 	}
 
 	return 0;
@@ -1742,6 +1758,18 @@ static int ca91cx42_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 			&ca91cx42_bridge->dma_resources);
 	}
 
+	/* Allocate DMA pool for descriptors */
+	sprintf(ca91cx42_device->pool_name, "%s_dp", ca91cx42_bridge->name);
+	ca91cx42_device->dma_pool = dma_pool_create(ca91cx42_device->pool_name,
+									&pdev->dev,
+									sizeof(struct ca91cx42_dma_entry),
+									sizeof(struct ca91cx42_dma_descriptor),
+									0);
+	if (!ca91cx42_device->dma_pool) {
+		retval = -ENOMEM;
+		goto err_pool;
+	}
+
 	/* Add location monitor to list */
 	lm = kmalloc(sizeof(*lm), GFP_KERNEL);
 	if (!lm) {
@@ -1806,6 +1834,9 @@ err_lm:
 		list_del(pos);
 		kfree(lm);
 	}
+	/* release dma pool */
+	dma_pool_destroy(ca91cx42_device->dma_pool);
+err_pool:
 err_dma:
 	/* resources are stored in link list */
 	list_for_each_safe(pos, n, &ca91cx42_bridge->dma_resources) {
@@ -1897,6 +1928,8 @@ static void ca91cx42_remove(struct pci_dev *pdev)
 		list_del(pos);
 		kfree(dma_ctrlr);
 	}
+	/* release dma pool */
+	dma_pool_destroy(bridge->dma_pool);
 
 	/* resources are stored in link list */
 	list_for_each_safe(pos, n, &ca91cx42_bridge->slave_resources) {
