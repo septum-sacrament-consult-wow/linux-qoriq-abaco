@@ -103,7 +103,7 @@ static u32 ca91cx42_VERR_irqhandler(struct vme_bridge *ca91cx42_bridge)
 
 	val = ioread32(bridge->base + DGCS);
 
-	if (!(val & 0x00000800)) {
+	if (!(val & CA91CX42_DGCS_DONE)) {
 		dev_err(ca91cx42_bridge->parent, "ca91cx42_VERR_irqhandler DMA "
 			"Read Error DGCS=%08X\n", val);
 	}
@@ -120,7 +120,7 @@ static u32 ca91cx42_LERR_irqhandler(struct vme_bridge *ca91cx42_bridge)
 
 	val = ioread32(bridge->base + DGCS);
 
-	if (!(val & 0x00000800))
+	if (!(val & CA91CX42_DGCS_DONE))
 		dev_err(ca91cx42_bridge->parent, "ca91cx42_LERR_irqhandler DMA "
 			"Read Error DGCS=%08X\n", val);
 
@@ -1173,9 +1173,21 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 
 	/* Fill out previous descriptors "Next Address" */
 	if (entry->list.prev != &list->entries) {
+		u32 val;
 		prev = list_entry(entry->list.prev, struct ca91cx42_dma_entry,
 			list);
+		/* Lock for updating */
+		do {
+			iowrite32(CA91CX42_D_LLUE_UPDATE, bridge->base + D_LLUE);
+			val = ioread32(bridge->base + D_LLUE);
+		}
+		while (!(val & CA91CX42_D_LLUE_UPDATE));
 		prev->descriptor.dcpp = cpu_to_le32(entry->dma_handle & ~CA91CX42_DCPP_M);
+		/* Flush descriptor */
+		dma_wmb();
+
+		/* Release lock */
+		iowrite32(0, bridge->base + D_LLUE);
 	}
 
 	return 0;
@@ -1251,6 +1263,13 @@ static int ca91cx42_dma_list_exec(struct vme_dma_list *list)
 	val |= (CA91CX42_DGCS_CHAIN | CA91CX42_DGCS_STOP | CA91CX42_DGCS_HALT |
 		CA91CX42_DGCS_DONE | CA91CX42_DGCS_LERR | CA91CX42_DGCS_VERR |
 		CA91CX42_DGCS_PERR);
+
+	iowrite32(val, bridge->base + DGCS);
+
+	/* Enable interrupts */
+	val |= (CA91CX42_DGCS_INT_STOP | CA91CX42_DGCS_INT_HALT |
+		CA91CX42_DGCS_INT_DONE | CA91CX42_DGCS_INT_LERR |
+		CA91CX42_DGCS_INT_VERR | CA91CX42_DGCS_INT_PERR);
 
 	iowrite32(val, bridge->base + DGCS);
 
@@ -1655,6 +1674,17 @@ static int ca91cx42_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	retval = pci_enable_device(pdev);
 	if (retval) {
 		dev_err(&pdev->dev, "Unable to enable device\n");
+		goto err_enable;
+	}
+
+	/* Enable bus mastering */
+	pci_set_master(pdev);
+
+	/* Ensure 32-bit address handling */
+	if ((pci_set_dma_mask(pdev, DMA_BIT_MASK(32)) != 0) ||
+	    (pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32)) != 0)) {
+		dev_err(&pdev->dev, "pci_set_dma_mask fail %p\n", pdev);
+		retval = -ENODEV;
 		goto err_enable;
 	}
 

@@ -393,6 +393,7 @@ static const int CA91CX42_VSI_TO[] = { VSI0_TO, VSI1_TO, VSI2_TO, VSI3_TO,
  * offset 218
  */
 #define CA91CX42_DCPP_M			0xf
+#define CA91CX42_DCPP_PROC		(1<<1)
 #define CA91CX42_DCPP_NULL		(1<<0)
 
 /*
@@ -421,6 +422,12 @@ static const int CA91CX42_VSI_TO[] = { VSI0_TO, VSI1_TO, VSI2_TO, VSI3_TO,
 #define CA91CX42_DGCS_INT_LERR		(1<<2)
 #define CA91CX42_DGCS_INT_VERR		(1<<1)
 #define CA91CX42_DGCS_INT_PERR		(1<<0)
+
+/*
+ * DMA Linked List Update Enable Register (D_LLUE)
+ * offset 224
+ */
+#define CA91CX42_D_LLUE_UPDATE		(1<<31)
 
 /*
  * PCI Interrupt Enable Register
