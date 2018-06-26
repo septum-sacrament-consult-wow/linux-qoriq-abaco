@@ -1039,6 +1039,7 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 	dma_addr_t dma_handle;
 	struct vme_dma_pci *pci_attr;
 	struct vme_dma_vme *vme_attr;
+	u32 temp_ctl;
 	int retval = 0;
 	struct device *dev;
 	struct ca91cx42_driver *bridge;
@@ -1066,12 +1067,13 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 	}
 
 	memset(&entry->descriptor, 0, sizeof(entry->descriptor));
+	temp_ctl = 0;
 
 	/* Save off dma_handle for device */
 	entry->dma_handle = dma_handle;
 
 	if (dest->type == VME_DMA_VME) {
-		entry->descriptor.dctl |= CA91CX42_DCTL_L2V;
+		temp_ctl |= CA91CX42_DCTL_L2V;
 		vme_attr = dest->private;
 		pci_attr = src->private;
 	} else {
@@ -1108,21 +1110,21 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 
 	/* Setup cycle types */
 	if (vme_attr->cycle & VME_BLT)
-		entry->descriptor.dctl |= CA91CX42_DCTL_VCT_BLT;
+		temp_ctl |= CA91CX42_DCTL_VCT_BLT;
 
 	/* Setup data width */
 	switch (vme_attr->dwidth) {
 	case VME_D8:
-		entry->descriptor.dctl |= CA91CX42_DCTL_VDW_D8;
+		temp_ctl |= CA91CX42_DCTL_VDW_D8;
 		break;
 	case VME_D16:
-		entry->descriptor.dctl |= CA91CX42_DCTL_VDW_D16;
+		temp_ctl |= CA91CX42_DCTL_VDW_D16;
 		break;
 	case VME_D32:
-		entry->descriptor.dctl |= CA91CX42_DCTL_VDW_D32;
+		temp_ctl |= CA91CX42_DCTL_VDW_D32;
 		break;
 	case VME_D64:
-		entry->descriptor.dctl |= CA91CX42_DCTL_VDW_D64;
+		temp_ctl |= CA91CX42_DCTL_VDW_D64;
 		break;
 	default:
 		dev_err(dev, "Invalid data width\n");
@@ -1132,19 +1134,19 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 	/* Setup address space */
 	switch (vme_attr->aspace) {
 	case VME_A16:
-		entry->descriptor.dctl |= CA91CX42_DCTL_VAS_A16;
+		temp_ctl |= CA91CX42_DCTL_VAS_A16;
 		break;
 	case VME_A24:
-		entry->descriptor.dctl |= CA91CX42_DCTL_VAS_A24;
+		temp_ctl |= CA91CX42_DCTL_VAS_A24;
 		break;
 	case VME_A32:
-		entry->descriptor.dctl |= CA91CX42_DCTL_VAS_A32;
+		temp_ctl |= CA91CX42_DCTL_VAS_A32;
 		break;
 	case VME_USER1:
-		entry->descriptor.dctl |= CA91CX42_DCTL_VAS_USER1;
+		temp_ctl |= CA91CX42_DCTL_VAS_USER1;
 		break;
 	case VME_USER2:
-		entry->descriptor.dctl |= CA91CX42_DCTL_VAS_USER2;
+		temp_ctl |= CA91CX42_DCTL_VAS_USER2;
 		break;
 	default:
 		dev_err(dev, "Invalid address space\n");
@@ -1153,14 +1155,18 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 	}
 
 	if (vme_attr->cycle & VME_SUPER)
-		entry->descriptor.dctl |= CA91CX42_DCTL_SUPER_SUPR;
+		temp_ctl |= CA91CX42_DCTL_SUPER_SUPR;
 	if (vme_attr->cycle & VME_PROG)
-		entry->descriptor.dctl |= CA91CX42_DCTL_PGM_PGM;
+		temp_ctl |= CA91CX42_DCTL_PGM_PGM;
 
-	entry->descriptor.dtbc = count;
-	entry->descriptor.dla = pci_attr->address;
-	entry->descriptor.dva = vme_attr->address;
-	entry->descriptor.dcpp = CA91CX42_DCPP_NULL;
+	entry->descriptor.dctl = cpu_to_le32(temp_ctl);
+	entry->descriptor.dtbc = cpu_to_le32(count);
+	entry->descriptor.dla = cpu_to_le32(pci_attr->address);
+	entry->descriptor.dva = cpu_to_le32(vme_attr->address);
+	entry->descriptor.dcpp = cpu_to_le32(CA91CX42_DCPP_NULL);
+
+	/* Flush descriptor */
+	dma_wmb();
 
 	/* Add to list */
 	list_add_tail(&entry->list, &list->entries);
@@ -1169,7 +1175,7 @@ static int ca91cx42_dma_list_add(struct vme_dma_list *list,
 	if (entry->list.prev != &list->entries) {
 		prev = list_entry(entry->list.prev, struct ca91cx42_dma_entry,
 			list);
-		prev->descriptor.dcpp = entry->dma_handle & ~CA91CX42_DCPP_M;
+		prev->descriptor.dcpp = cpu_to_le32(entry->dma_handle & ~CA91CX42_DCPP_M);
 	}
 
 	return 0;
@@ -1192,10 +1198,10 @@ static int ca91cx42_dma_busy(struct vme_bridge *ca91cx42_bridge)
 
 	tmp = ioread32(bridge->base + DGCS);
 
-	if (tmp & CA91CX42_DGCS_ACT)
-		return 0;
-	else
+	if (tmp & CA91CX42_DGCS_DONE)
 		return 1;
+	else
+		return 0;
 }
 
 static int ca91cx42_dma_list_exec(struct vme_dma_list *list)
