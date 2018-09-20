@@ -37,6 +37,7 @@
 
 /include/ "ppc11a-t208xsi-pre.dtsi"
 /include/ "ppc11a-tx.dtsi"
+/include/ "ppc11a-localbus-t2081.dtsi"
 
 / {
 	model = "abaco,PPC11A-T2081";
