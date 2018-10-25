@@ -3,12 +3,12 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
+ *	* Redistributions of source code must retain the above copyright
  *	 notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
+ *	* Redistributions in binary form must reproduce the above copyright
  *	 notice, this list of conditions and the following disclaimer in the
  *	 documentation and/or other materials provided with the distribution.
- *     * Neither the name of Freescale Semiconductor nor the
+ *	* Neither the name of Freescale Semiconductor nor the
  *	 names of its contributors may be used to endorse or promote products
  *	 derived from this software without specific prior written permission.
  *
@@ -32,7 +32,7 @@
 
 /*
  * PPC11A Device Tree Source
- * Copyright (C) 2015 Abaco Systems, Inc
+ * Copyright (C) 2018 Abaco Systems, Inc
  *
  * Adapted from T1042 Device Tree Source
 */
@@ -42,10 +42,10 @@
 	ifc: localbus@ffe124000 {
 		reg = <0xf 0xfe124000 0 0x2000>;
 		/* numbered by chip select */
-		ranges = <1 0 0xf 0xe0000000 0x10000000
-		          2 0 0xf 0xf2000000 0x80000
-			  3 0 0xf 0xf0000000 0x10000
-		          4 0 0xf 0xf0020000 0x100>;
+		ranges = <	1 0 0xf 0xe0000000 0x10000000
+					2 0 0xf 0xf2000000 0x80000
+					3 0 0xf 0xf0000000 0x10000
+					4 0 0xf 0xf0020000 0x100>;
 
 		nor@1,0 {
 			#address-cells = <1>;
@@ -56,7 +56,7 @@
 			bank-width = <2>;
 			device-width = <1>;
 
-			/* the top 0xf000000  are the 2 boot areas (each split into 2 )  */
+			/* the top 0xf000000 are the 2 boot areas (each split into 2 ) */
 			partition@0 {
 				label = "user";
 				reg = <0x00000000 0x0f000000>;
@@ -89,7 +89,7 @@
 
 		cpldgpio0: gpio-controller@3,670 {
 			compatible = "abaco,cpldgpio";
-			reg = <0x3 0x670 0xB>;
+			reg = <0x3 0x670 0xC>;
 			gpio-controller;
 			#gpio-cells = <2>;
 			interrupts = <0x0>;
@@ -98,21 +98,29 @@
 
 		cpldgpio1: gpio-controller@3,67C {
 			compatible = "abaco,cpldgpio";
-			reg = <0x3 0x67C 0xB>;
+			reg = <0x3 0x67C 0xC>;
 			gpio-controller;
 			#gpio-cells = <2>;
-			interrupts = <0x0>;
+			interrupts = <0x1>;
 			interrupt-parent = <&cpldirqc0>;
 		};
 
 		cpldgpio2: gpio-controller@3,688 {
 			compatible = "abaco,cpldgpio";
-			reg = <0x3 0x688 0xB>;
+			reg = <0x3 0x688 0xC>;
 			gpio-controller;
 			#gpio-cells = <2>;
-			interrupts = <0x0>;
+			interrupts = <0x2>;
 			interrupt-parent = <&cpldirqc0>;
 		};
+
+
+		/*
+		Serial4 should go through the FPGA Interrupt controller
+		but attaches itself to 0 and works OK
+
+		This is to reflect that as being the case to avoid confusion
+		*/
 
 		serial4: serial@4,0 {
 			#address-cells = <1>;
@@ -121,8 +129,8 @@
 			compatible = "ns16550a";
 			reg = <0x4 0x0 0x100>;
 			clock-frequency = <800000000>;
-			interrupts = <0xB>;
-			interrupt-parent = <&cpldirqc0>;
+			interrupts = <0x0>;
+			interrupt-parent = <&mpic>;
 		};
 	};
 };
