@@ -1,7 +1,12 @@
 /*
- * T2080/T2081 Silicon/SoC Device Tree Source (pre include)
+ * PPC11A-T1042 Silicon/SoC Device Tree Source (pre include)
+ *
+ * Adapted from fsl/t104xsi-pre.dtsi
+ *
+ * T1040/T1042 Silicon/SoC Device Tree Source (pre include)
  *
  * Copyright 2013 Freescale Semiconductor Inc.
+ * Copyright (C) 2017-8 Abaco Systems, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -20,7 +25,7 @@
  * Foundation, either version 2 of that License or (at your option) any
  * later version.
  *
- * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
@@ -34,7 +39,7 @@
 
 /dts-v1/;
 
-/include/ "e6500_power_isa.dtsi"
+/include/ "e5500_power_isa.dtsi"
 
 / {
 	#address-cells = <2>;
@@ -45,62 +50,71 @@
 		ccsr = &soc;
 		dcsr = &dcsr;
 
+		dma0 = &dma0;
+		dma1 = &dma1;
 		serial0 = &serial0;
 		serial1 = &serial1;
 		serial2 = &serial2;
-		serial3 = &serial3;
-		serial4 = &serial4;
+		pci0 = &pci0;
+		pci1 = &pci1;
+		usb0 = &usb0;
+		usb1 = &usb1;
 
 		crypto = &crypto;
+
 		pme = &pme;
 		qman = &qman;
 		bman = &bman;
 		fman0 = &fman0;
-
 		ethernet0 = &enet0;
 		ethernet1 = &enet1;
-
-		pci2 = &pci2;
-		pci3 = &pci3;
-
-		usb0 = &usb0;
-		usb1 = &usb1;
-		dma0 = &dma0;
-		dma1 = &dma1;
-		dma2 = &dma2;
+		vga = &display;
+		display = &display;
 	};
 
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		cpu0: PowerPC,e6500@0 {
+		cpu0: PowerPC,e5500@0 {
 			device_type = "cpu";
-			reg = <0 1>;
+			reg = <0>;
 			clocks = <&clockgen 1 0>;
 			next-level-cache = <&L2_1>;
-			fsl,portid-mapping = <0x80000000>;
+			#cooling-cells = <2>;
+			L2_1: l2-cache {
+				next-level-cache = <&cpc>;
+			};
 		};
-		cpu1: PowerPC,e6500@2 {
+		cpu1: PowerPC,e5500@1 {
 			device_type = "cpu";
-			reg = <2 3>;
-			clocks = <&clockgen 1 0>;
-			next-level-cache = <&L2_1>;
-			fsl,portid-mapping = <0x80000000>;
+			reg = <1>;
+			clocks = <&clockgen 1 1>;
+			next-level-cache = <&L2_2>;
+			#cooling-cells = <2>;
+			L2_2: l2-cache {
+				next-level-cache = <&cpc>;
+			};
 		};
-		cpu2: PowerPC,e6500@4 {
+		cpu2: PowerPC,e5500@2 {
 			device_type = "cpu";
-			reg = <4 5>;
-			clocks = <&clockgen 1 0>;
-			next-level-cache = <&L2_1>;
-			fsl,portid-mapping = <0x80000000>;
+			reg = <2>;
+			clocks = <&clockgen 1 2>;
+			next-level-cache = <&L2_3>;
+			#cooling-cells = <2>;
+			L2_3: l2-cache {
+				next-level-cache = <&cpc>;
+			};
 		};
-		cpu3: PowerPC,e6500@6 {
+		cpu3: PowerPC,e5500@3 {
 			device_type = "cpu";
-			reg = <6 7>;
-			clocks = <&clockgen 1 0>;
-			next-level-cache = <&L2_1>;
-			fsl,portid-mapping = <0x80000000>;
+			reg = <3>;
+			clocks = <&clockgen 1 3>;
+			next-level-cache = <&L2_4>;
+			#cooling-cells = <2>;
+			L2_4: l2-cache {
+				next-level-cache = <&cpc>;
+			};
 		};
 	};
 };

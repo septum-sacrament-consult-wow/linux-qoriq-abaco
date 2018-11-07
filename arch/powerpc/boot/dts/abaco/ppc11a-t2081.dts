@@ -4,7 +4,7 @@
  * Adapted from t2080PCIe devicetree sources
  *
  * Copyright 2014 Freescale Semiconductor Inc.
- * Copyright 2017 Abaco Systems Ltd.
+ * Copyright (C) 2017-8 Abaco Systems, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,7 +35,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/include/ "ppc11a-t208xsi-pre.dtsi"
+/include/ "ppc11a-t2081si-pre.dtsi"
 /include/ "ppc11a-tx.dtsi"
 /include/ "ppc11a-localbus-t2081.dtsi"
 
