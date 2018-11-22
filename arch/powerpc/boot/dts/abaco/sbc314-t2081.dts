@@ -35,7 +35,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/include/ "sbc314-t208xsi-pre.dtsi"
+/include/ "sbc314-t2081si-pre.dtsi"
 /include/ "sbc314-tx.dtsi"
 /include/ "ppc11a-localbus-t2081.dtsi"
 
