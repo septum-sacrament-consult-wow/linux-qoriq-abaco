@@ -35,8 +35,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/include/ "t104xsi-pre.dtsi"
+/include/ "sbc314-t104xsi-pre.dtsi"
 /include/ "sbc314-tx.dtsi"
+/include/ "sbc314-localbus-t1042.dtsi"
 
 / {
 	model = "abaco,SBC314-T1042";
@@ -120,5 +121,5 @@
 
 };
 
-#include "fsl/t1042si-post.dtsi"
+#include "sbc314-t1042si-post.dtsi"
 /include/ "qoriq-dpaa-res3.dtsi"

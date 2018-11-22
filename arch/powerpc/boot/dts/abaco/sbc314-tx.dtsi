@@ -93,6 +93,11 @@
 				compatible = "dallas,ds1307";
 				reg = <0x68>;
 			};
+
+			eti@6b {
+				compatible = "dallas,ds1682";
+				reg = <0x6b>;
+			};
 		};
 
 		i2c@118100 {
@@ -101,4 +106,4 @@
 	};
 };
 
-/include/ "sbc314-localbus.dtsi"
+
