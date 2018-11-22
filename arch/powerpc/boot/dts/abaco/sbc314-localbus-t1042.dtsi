@@ -96,6 +96,13 @@
 			interrupt-parent = <&cpldirqc0>;
 		};
 
+		/*
+		Serial2 should go through the FPGA Interrupt controller
+		but attaches itself to 0 and works OK
+
+		This is to reflect that as being the case to avoid confusion
+		*/
+
 		serial2: serial@4,0 {
 			#address-cells = <1>;
 			#size-cells = <1>;

@@ -1,7 +1,12 @@
 /*
+ * PPC11A-T1042 Silicon/SoC Device Tree Source (pre include)
+ *
+ * Adapted from fsl/t104xsi-pre.dtsi
+ *
  * T1040/T1042 Silicon/SoC Device Tree Source (pre include)
  *
  * Copyright 2013 Freescale Semiconductor Inc.
+ * Copyright (C) 2017-8 Abaco Systems, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -45,8 +50,11 @@
 		ccsr = &soc;
 		dcsr = &dcsr;
 
+		dma0 = &dma0;
+		dma1 = &dma1;
 		serial0 = &serial0;
 		serial1 = &serial1;
+		serial2 = &serial2;
 		pci0 = &pci0;
 		pci1 = &pci1;
 		usb0 = &usb0;

@@ -1,7 +1,12 @@
 /*
+ * SBC314-T2081 Silicon/SoC Device Tree Source (pre include)
+ *
+ * Adapted from fsl/t208xsi-pre.dtsi
+ *
  * T2080/T2081 Silicon/SoC Device Tree Source (pre include)
  *
  * Copyright 2013 Freescale Semiconductor Inc.
+ * Copyright (C) 2017-8 Abaco Systems, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
