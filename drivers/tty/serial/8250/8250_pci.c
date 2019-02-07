@@ -1861,13 +1861,13 @@ pci_xr17v35x_setup(struct serial_private *priv,
 		writeb(0x00, p + 0x90); /*MPIOLVL[7:0]*/
 		writeb(0x00, p + 0x91); /*MPIO3T[7:0]*/
 		writeb(0x00, p + 0x92); /*MPIOINV[7:0]*/
-		writeb(0x00, p + 0x93); /*MPIOSEL[7:0]*/
+		writeb(0xff, p + 0x93); /*MPIOSEL[7:0]*/ /*SWR set to inputs*/
 		writeb(0x00, p + 0x94); /*MPIOOD[7:0]*/
 		writeb(0x00, p + 0x95); /*MPIOINT[15:8]*/
 		writeb(0x00, p + 0x96); /*MPIOLVL[15:8]*/
 		writeb(0x00, p + 0x97); /*MPIO3T[15:8]*/
 		writeb(0x00, p + 0x98); /*MPIOINV[15:8]*/
-		writeb(0x00, p + 0x99); /*MPIOSEL[15:8]*/
+		writeb(0xff, p + 0x99); /*MPIOSEL[15:8]*/ /*SWR set to inputs */
 		writeb(0x00, p + 0x9a); /*MPIOOD[15:8]*/
 	}
 	writeb(0x00, p + UART_EXAR_8XMODE);
