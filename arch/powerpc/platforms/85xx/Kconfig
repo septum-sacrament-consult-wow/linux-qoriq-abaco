@@ -251,6 +251,20 @@ config GE_IMP3A
 	  This board is a 3U CompactPCI Single Board Computer with a Freescale
 	  P2020 processor.
 
+config GE_IMP3B
+	bool "GE Intelligent Platforms IMP3B"
+	select DEFAULT_UIMAGE
+	select SWIOTLB
+	select MMIO_NVRAM
+	select ARCH_REQUIRE_GPIOLIB
+	select GE_FPGA
+	help
+	  This option enables support for the GE Intelligent Platforms IMP3B
+	  board.
+
+	  This board is a 3U CompactPCI Single Board Computer with a Freescale
+	  P2020 processor.
+
 config SGY_CTS1000
 	tristate "Servergy CTS-1000 support"
 	select GPIOLIB
