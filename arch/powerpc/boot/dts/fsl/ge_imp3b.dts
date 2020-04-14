@@ -1,7 +1,7 @@
 /*
  * GE IMP3B Device Tree Source
  *
- * Copyright 2010-2011 GE Intelligent Platforms Embedded Systems, Inc.
+ * Copyright 2020 Abaco Systems, Inc
  *
  * This program is free software; you can redistribute  it and/or modify it
  * under  the terms of  the GNU General  Public License as published by the
@@ -151,8 +151,7 @@
 		};
 
 		usb@22000 {
-			phy_type = "ulpi";
-			dr_mode = "host";
+			status="disabled";
 		};
 
 		mdio@24520 {
@@ -161,11 +160,6 @@
 				interrupts = <0xc 0x4>;
 				reg = <0x1>;
 			};
-			phy1: ethernet-phy@1 {
-				interrupt-parent = <&gef_pic>;
-				interrupts = <0xb 0x4>;
-				reg = <0x2>;
-			};
 			tbi0: tbi-phy@11 {
 				reg = <0x11>;
 				device_type = "tbi-phy";
@@ -173,10 +167,7 @@
 		};
 
 		mdio@25520 {
-			tbi1: tbi-phy@11 {
-				reg = <0x11>;
-				device_type = "tbi-phy";
-			};
+			status="disabled";
 		};
 
 		mdio@26520 {
@@ -190,9 +181,7 @@
 		};
 
 		enet1: ethernet@25000 {
-			tbi-handle = <&tbi1>;
-			phy-handle = <&phy1>;
-			phy-connection-type = "gmii";
+			status="disabled";
 		};
 
 		enet2: ethernet@26000 {
