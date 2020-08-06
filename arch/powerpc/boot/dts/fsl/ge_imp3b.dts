@@ -113,15 +113,21 @@
 			reg = <0x4 0x808 0x8>;
 			interrupts = <9 4>;
 		*/
-
-		nand@6,0 {
-			compatible = "fsl,elbc-fcm-nand";
-			reg = <0x6 0x0 0x40000>;
+		
+		serial3: serial@6,0 {
+			device_type = "serial";
+			compatible = "ns16550";
+			reg = <0x6 0x0 0x100>;
+			clock-frequency = <1843200>;
+			interrupts = <1 2 0 0>;
 		};
 
-		nand@7,0 {
-			compatible = "fsl,elbc-fcm-nand";
-			reg = <0x7 0x0 0x40000>;
+		serial4: serial@7,0 {
+			device_type = "serial";
+			compatible = "ns16550";
+			reg = <0x7 0x0 0x100>;
+			clock-frequency = <1843200>;
+			interrupts = <2 2 0 0>;
 		};
 	};
 
