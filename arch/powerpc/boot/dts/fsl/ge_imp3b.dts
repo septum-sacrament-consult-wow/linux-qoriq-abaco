@@ -114,6 +114,7 @@
 			interrupts = <9 4>;
 		*/
 		
+		/*
 		serial3: serial@6,0 {
 			device_type = "serial";
 			compatible = "ns16550";
@@ -129,6 +130,7 @@
 			clock-frequency = <1843200>;
 			interrupts = <2 2 0 0>;
 		};
+		*/
 	};
 
 	soc: soc@fef00000 {
